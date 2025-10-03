@@ -15,7 +15,8 @@ public class Camera: ICamera
     public int Height { get; set; }
     public int XOffset { get; set; }
     public int YOffset { get; set; }
-    public (int Min, int Max) WidthRange {
+    public (int Min, int Max) WidthRange 
+    {
         get
         {
             _camera.GetParam(PRM.WIDTH_MIN, out int min);
@@ -64,6 +65,19 @@ public class Camera: ICamera
         {
             _camera.SetParam(PRM.EXPOSURE, (int)value.Microseconds);
         } 
+    }
+
+    public Level Gain
+    {
+        get
+        {
+            _camera.GetParam(PRM.GAIN, out int gainAsdb);
+            return Level.FromDecibels(gainAsdb);
+        }
+        set
+        {
+            _camera.SetParam(PRM.GAIN, (float)value.Decibels);
+        }
     }
     
     public ImageFormat CameraOutputFormat { get; set; }
