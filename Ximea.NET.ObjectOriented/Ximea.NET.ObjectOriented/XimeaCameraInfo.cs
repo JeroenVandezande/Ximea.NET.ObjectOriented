@@ -1,3 +1,4 @@
+using System;
 using xiApi.NET;
 
 namespace Ximea.NET.ObjectOriented;
