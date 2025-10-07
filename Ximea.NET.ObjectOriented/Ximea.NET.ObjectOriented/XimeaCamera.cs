@@ -9,7 +9,48 @@ using xiApi.NET;
 
 namespace Ximea.NET.ObjectOriented;
 
-public class XimeaCamera : ICamera, IAsyncDisposable, IDisposable
+/// <summary>
+/// Represents an interface for configuring and managing the trigger functionality of a XIMEA camera.
+/// </summary>
+/// <remarks>
+/// This interface provides methods and properties to handle trigger configurations and interactions
+/// with the underlying XIMEA camera device.
+/// </remarks>
+public interface IXimeaCameraTrigger: ITriggerConfig
+{
+    /// <summary>
+    /// Configures the trigger settings of a XIMEA camera by writing the specified trigger parameters to the camera device.
+    /// </summary>
+    /// <param name="camera">The XIMEA camera instance to which the trigger settings will be applied.</param>
+    /// <exception cref="XimeaCameraException">
+    /// Thrown if an error occurs while setting trigger parameters on the camera.
+    /// </exception>
+    void WriteTriggerDataToCamera(xiCam camera);
+}
+
+/// <summary>
+/// Represents a hardware trigger configuration for a XIMEA camera.
+/// </summary>
+/// <remarks>
+/// This class defines the parameters required to configure and manage the hardware trigger settings
+/// of a XIMEA camera, including the input channel, trigger type, and selector.
+/// It also implements methods to write these settings to the hardware.
+/// </remarks>
+public sealed record XimeaHardwareTrigger(
+    int InputChannel,
+    bool RisingEdge,
+    int Selector
+) : IXimeaCameraTrigger
+{
+    public void WriteTriggerDataToCamera(xiCam camera)
+    {
+        camera.SetParam(PRM.GPI_SELECTOR, InputChannel);
+        camera.SetParam(PRM.TRG_SELECTOR, Selector);
+        camera.SetParam(PRM.TRG_SOURCE, RisingEdge ? TRG_SOURCE.EDGE_RISING : TRG_SOURCE.EDGE_FALLING);
+    }
+}
+
+public class XimeaCamera : ICamera, IDisposable
 {
     /// <summary>
     /// Represents a single XIMEA camera with a user-friendly and structured API for interaction.
@@ -42,7 +83,35 @@ public class XimeaCamera : ICamera, IAsyncDisposable, IDisposable
         _camera.StartAcquisition();
         _acquisitionIsRunning = true;
     }
-    
+
+    /// <summary>
+    /// Configures the camera's trigger settings based on the provided trigger configuration.
+    /// </summary>
+    /// <param name="cfg">The trigger configuration to be applied to the XIMEA camera.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the trigger configuration is invalid or if the camera is unable to apply the configuration.
+    /// </exception>
+    public void SetupTrigger(ITriggerConfig cfg)
+    {
+        _acquisitionIsRunning = false;
+        _camera.StopAcquisition();
+        
+        if (cfg is NoTrigger)
+        {
+            _camera.SetParam(PRM.TRG_SOURCE, TRG_SOURCE.OFF);
+        }
+        else if (cfg is SoftwareTrigger)
+        {
+            _camera.SetParam(PRM.TRG_SOURCE, TRG_SOURCE.SOFTWARE);
+        }
+        else if (cfg is IXimeaCameraTrigger triggerCfg)
+        {
+            triggerCfg.WriteTriggerDataToCamera(_camera);
+        }
+        _camera.StartAcquisition();
+        _acquisitionIsRunning = true;
+    }
+
     public void FireManualTrigger()
     {
         _camera.SetParam(PRM.TRG_SOFTWARE, 0);
@@ -133,17 +202,26 @@ public class XimeaCamera : ICamera, IAsyncDisposable, IDisposable
             _cameraOutputFormat = value;
         }
     }
-
-    public ValueTask DisposeAsync()
-    {
-        throw new NotImplementedException();
-    }
-
+    
     public void Dispose()
     {
-        throw new NotImplementedException();
+        if (_disposed) return;
+        _disposed = true;
+        _cts.Cancel();
+        _acquisitionIsRunning = false;
+        _camera.StopAcquisition();
+        _loopTask.Wait();
+        _camera.CloseDevice();
+        _cts.Dispose();
     }
 
+    /// <summary>
+    /// An event triggered whenever a new image is successfully captured by the XIMEA camera.
+    /// </summary>
+    /// <remarks>
+    /// The event provides the captured image encapsulated in an <see cref="ImageData"/> object.
+    /// Subscribing to this event allows users to handle real-time image processing or saving operations.
+    /// </remarks>
     public event EventHandler<ImageData>? ImageReceived;
 
     private readonly xiCam _camera = new();
@@ -151,6 +229,7 @@ public class XimeaCamera : ICamera, IAsyncDisposable, IDisposable
     private readonly Task _loopTask;
     private bool _acquisitionIsRunning = false;
     private ImageFormat _cameraOutputFormat;
+    private bool _disposed;
 
     private unsafe byte[] _getDataFromXiImg(XI_IMG img)
     {
