@@ -38,14 +38,12 @@ public interface IXimeaCameraTrigger: ITriggerConfig
 /// </remarks>
 public sealed record XimeaHardwareTrigger(
     int InputChannel,
-    bool RisingEdge,
-    int Selector
+    bool RisingEdge
 ) : IXimeaCameraTrigger
 {
     public void WriteTriggerDataToCamera(xiCam camera)
     {
         camera.SetParam(PRM.GPI_SELECTOR, InputChannel);
-        camera.SetParam(PRM.TRG_SELECTOR, Selector);
         camera.SetParam(PRM.TRG_SOURCE, RisingEdge ? TRG_SOURCE.EDGE_RISING : TRG_SOURCE.EDGE_FALLING);
     }
 }
