@@ -23,8 +23,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CameraInterface" Version="1.4.0" />
-      <PackageReference Include="xiAPI.NET.CrossPlatform" Version="1.0.0" />
+      <PackageReference Include="CameraInterface" Version="1.6.0" />
+      <PackageReference Include="xiAPI.NET.CrossPlatform" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>

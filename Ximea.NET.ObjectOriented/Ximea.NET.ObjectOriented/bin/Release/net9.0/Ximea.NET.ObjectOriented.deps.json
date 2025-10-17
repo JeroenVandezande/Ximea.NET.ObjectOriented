@@ -1,0 +1,89 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "Ximea.NET.ObjectOriented/1.0.0": {
+        "dependencies": {
+          "CameraInterface": "1.4.0",
+          "xiAPI.NET.CrossPlatform": "1.1.0"
+        },
+        "runtime": {
+          "Ximea.NET.ObjectOriented.dll": {}
+        }
+      },
+      "CameraInterface/1.4.0": {
+        "dependencies": {
+          "UnitsNet": "5.75.0"
+        },
+        "runtime": {
+          "lib/net9.0/CameraInterface.dll": {
+            "assemblyVersion": "1.4.0.0",
+            "fileVersion": "1.4.0.0"
+          }
+        }
+      },
+      "UnitsNet/5.75.0": {
+        "runtime": {
+          "lib/net9.0/UnitsNet.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.75.0.0"
+          }
+        },
+        "resources": {
+          "lib/net9.0/fr-CA/UnitsNet.resources.dll": {
+            "locale": "fr-CA"
+          },
+          "lib/net9.0/nb-NO/UnitsNet.resources.dll": {
+            "locale": "nb-NO"
+          },
+          "lib/net9.0/ru-RU/UnitsNet.resources.dll": {
+            "locale": "ru-RU"
+          },
+          "lib/net9.0/zh-CN/UnitsNet.resources.dll": {
+            "locale": "zh-CN"
+          }
+        }
+      },
+      "xiAPI.NET.CrossPlatform/1.1.0": {
+        "runtime": {
+          "lib/net9.0/xiApi.NET.CrossPlatform.dll": {
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Ximea.NET.ObjectOriented/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "CameraInterface/1.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-hjb5r2C6xjOHwWNcrUvmg7itb19Rb8rjOQqnGp1n8F1ZuA7b4SP8nqzNbOhz2hIpMptDqf8AHOvbX8xcMIlyAA==",
+      "path": "camerainterface/1.4.0",
+      "hashPath": "camerainterface.1.4.0.nupkg.sha512"
+    },
+    "UnitsNet/5.75.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CgzvfvE2FaFE+swo7SzZFjhosmh4GpiVJ7Y1N4cQ1qChaUaw3ymw4al+ZxpoBh1RFoo88d+fo2SG194P9G1X+A==",
+      "path": "unitsnet/5.75.0",
+      "hashPath": "unitsnet.5.75.0.nupkg.sha512"
+    },
+    "xiAPI.NET.CrossPlatform/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zaQqGVOPoXlx2eu0fqJAE7eSgOasbz3P44Eci56kcA6numVU10cymGRtP/lMY4aejmy5RauPLTIdrqaJVG4POQ==",
+      "path": "xiapi.net.crossplatform/1.1.0",
+      "hashPath": "xiapi.net.crossplatform.1.1.0.nupkg.sha512"
+    }
+  }
+}

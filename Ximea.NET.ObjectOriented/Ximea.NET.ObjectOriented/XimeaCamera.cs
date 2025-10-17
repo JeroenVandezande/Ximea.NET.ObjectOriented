@@ -44,6 +44,7 @@ public sealed record XimeaHardwareTrigger(
     public void WriteTriggerDataToCamera(xiCam camera)
     {
         camera.SetParam(PRM.GPI_SELECTOR, InputChannel);
+        camera.SetParam(PRM.GPI_MODE, GPI_MODE.TRIGGER);
         camera.SetParam(PRM.TRG_SOURCE, RisingEdge ? TRG_SOURCE.EDGE_RISING : TRG_SOURCE.EDGE_FALLING);
     }
 }
@@ -71,17 +72,24 @@ public class XimeaCamera : ICamera, IDisposable
     
     private void InitializeDefaults()
     {
-        // Unsafe buffer policy for GetImage(byte[] ...)
-        _camera.SetParam(PRM.BUFFER_POLICY, BUFF_POLICY.UNSAFE);
+        _acquisitionIsRunning = false;
+        _camera.SetParam(PRM.TRG_SOURCE, TRG_SOURCE.OFF);
+        CameraOutputFormat = ImageFormat.Mono8;
+    }
 
-        // Reasonable defaults
-        _camera.SetParam(PRM.EXPOSURE, 10_000); // 10 ms
-        _camera.SetParam(PRM.IMAGE_DATA_FORMAT, IMG_FORMAT.MONO8);
-        _camera.SetParam(PRM.TRG_SOURCE, TRG_SOURCE.SOFTWARE);
+    public void StartAcquisition()
+    {
+        CalculateTransportBuffers();
         _camera.StartAcquisition();
         _acquisitionIsRunning = true;
     }
 
+    public void StopAcquisition()
+    {
+        _acquisitionIsRunning = false;
+        _camera.StopAcquisition();
+    }
+    
     /// <summary>
     /// Configures the camera's trigger settings based on the provided trigger configuration.
     /// </summary>
@@ -91,8 +99,10 @@ public class XimeaCamera : ICamera, IDisposable
     /// </exception>
     public void SetupTrigger(ITriggerConfig cfg)
     {
-        _acquisitionIsRunning = false;
-        _camera.StopAcquisition();
+        if (_acquisitionIsRunning)
+        {
+            throw new InvalidOperationException("Cannot change trigger settings while acquisition is running.");
+        }
         
         if (cfg is NoTrigger)
         {
@@ -106,8 +116,7 @@ public class XimeaCamera : ICamera, IDisposable
         {
             triggerCfg.WriteTriggerDataToCamera(_camera);
         }
-        _camera.StartAcquisition();
-        _acquisitionIsRunning = true;
+        
     }
 
     public void FireManualTrigger()
@@ -120,10 +129,72 @@ public class XimeaCamera : ICamera, IDisposable
     /// </summary>
     public XimeaCameraInfo XimeaCameraInfo { get; }
 
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public int XOffset { get; set; }
-    public int YOffset { get; set; }
+    public int Width {
+        get
+        {
+            _camera.GetParam(PRM.WIDTH, out int w);
+            return w;
+        }
+        set
+        {
+            if (_acquisitionIsRunning)
+            {
+                throw new InvalidOperationException("Cannot change camera resolution while acquisition is running.");
+            }
+            _camera.SetParam(PRM.WIDTH, value);
+        }
+    }
+
+    public int Height
+    {
+        get
+        {
+            _camera.GetParam(PRM.HEIGHT, out int w);
+            return w;
+        }
+        set
+        {
+            if (_acquisitionIsRunning)
+            {
+               throw new InvalidOperationException("Cannot change camera resolution while acquisition is running.");
+            }
+            _camera.SetParam(PRM.HEIGHT, value);
+        }
+    }
+
+    public int XOffset
+    {
+        get
+        {
+            _camera.GetParam(PRM.OFFSET_X, out int w);
+            return w;
+        }
+        set
+        {
+            if (_acquisitionIsRunning)
+            {
+               throw new InvalidOperationException("Cannot change camera offset while acquisition is running.");
+            }
+            _camera.SetParam(PRM.OFFSET_X, value);
+        }
+    }
+
+    public int YOffset
+    {
+        get
+        {
+            _camera.GetParam(PRM.OFFSET_Y, out int w);
+            return w;
+        }
+        set
+        {
+            if (_acquisitionIsRunning)
+            {
+                throw new InvalidOperationException("Cannot change camera offset while acquisition is running.");
+            }
+            _camera.SetParam(PRM.OFFSET_Y, value);
+        }
+    }
 
     public (int Min, int Max) WidthRange
     {
@@ -196,6 +267,10 @@ public class XimeaCamera : ICamera, IDisposable
         get => _cameraOutputFormat;
         set
         {
+            if (_acquisitionIsRunning)
+            {
+                throw new InvalidOperationException("Cannot change camera output format while acquisition is running.");           
+            }
             _camera.SetParam(PRM.IMAGE_DATA_FORMAT, ApiMappings.ToXiImageFormat(value));
             _cameraOutputFormat = value;
         }
@@ -226,9 +301,25 @@ public class XimeaCamera : ICamera, IDisposable
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _loopTask;
     private bool _acquisitionIsRunning = false;
-    private ImageFormat _cameraOutputFormat;
+    private ImageFormat _cameraOutputFormat = ImageFormat.Rgb24;
     private bool _disposed;
+    
+    private static int AlignUp(int value, int align) => ((value + align - 1) / align) * align;
 
+    private void CalculateTransportBuffers()
+    {
+        var bytesPerPixel = _cameraOutputFormat.BytesPerPixel();
+        // compute transport and pool sizes
+        int payload = Width * Height * bytesPerPixel;
+        int transportSize = Math.Max(64 * 1024, AlignUp(payload, 64 * 1024));
+        int bufferCount  = 8;
+        int totalPool    = transportSize * bufferCount;
+
+        // apply
+        _camera.SetParam(PRM.ACQ_TRANSPORT_BUFFER_SIZE, transportSize);
+        _camera.SetParam(PRM.ACQ_BUFFER_SIZE, totalPool);
+    }
+    
     private unsafe byte[] _getDataFromXiImg(XI_IMG img)
     {
         var buffer = new byte[img.bp_size];
