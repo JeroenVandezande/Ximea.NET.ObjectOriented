@@ -2,10 +2,11 @@
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using CameraInterface;
+using DD42.Graphics.Camera;
 using UnitsNet;
 using xiApi;
 using xiApi.NET;
+using DD42.Graphics;
 
 namespace Ximea.NET.ObjectOriented;
 

@@ -1,4 +1,4 @@
-using CameraInterface;
+using DD42.Graphics;
 using xiApi.NET;
 
 namespace Ximea.NET.ObjectOriented;

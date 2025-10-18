@@ -10,7 +10,7 @@
         <Nullable>disable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>Ximea.NET.ObjectOriented</PackageId>
-        <Version>1.0.0</Version>
+        <Version>1.2.0</Version>
         <Authors>Jeroen Vandezande</Authors>
         <Description>an OO implementation of the Ximea Camera.</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -19,11 +19,11 @@
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <PackageTags>ximea;xiapi;camera</PackageTags>
-        <PackageReleaseNotes>initial release</PackageReleaseNotes>
+        <PackageReleaseNotes>updated packages</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CameraInterface" Version="1.6.0" />
+      <PackageReference Include="CameraInterface" Version="2.1.0" />
       <PackageReference Include="xiAPI.NET.CrossPlatform" Version="1.1.0" />
     </ItemGroup>
 
