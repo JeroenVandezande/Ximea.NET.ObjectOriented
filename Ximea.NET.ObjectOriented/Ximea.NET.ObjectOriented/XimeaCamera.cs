@@ -146,6 +146,16 @@ public class XimeaCamera : ICamera, IDisposable
         }
     }
 
+    public bool AutoWhiteBalanceIsEnabled
+    {
+        get
+        {
+            _camera.GetParam(PRM.AUTO_WB, out int w);
+            return w == 1;
+        }
+        set => _camera.SetParam(PRM.AUTO_WB, value ? 1 : 0);
+    }
+
     public int Height
     {
         get
