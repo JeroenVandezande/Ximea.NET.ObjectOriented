@@ -129,7 +129,113 @@ public class XimeaCamera : ICamera, IDisposable
     /// Contains relevant information about a specific XIMEA camera, including its ID, serial number, and model name.
     /// </summary>
     public XimeaCameraInfo XimeaCameraInfo { get; }
+    
+    public bool AutoWhiteBalanceIsEnabled
+    {
+        get
+        {
+            _camera.GetParam(PRM.AUTO_WB, out int w);
+            return w == 1;
+        }
+        set => _camera.SetParam(PRM.AUTO_WB, value ? 1 : 0);
+    }
+    
+    public void DoManualWhiteBalance() => _camera.SetParam(PRM.MANUAL_WB, 1);
+    
+    public float WhiteBalanceRedCoefficient {
+        get
+        {
+            _camera.GetParam(PRM.WB_KR, out float w);
+            return w;
+        }
+        set => _camera.SetParam(PRM.WB_KR, value);
+    }
+    
+    public float WhiteBalanceGreenCoefficient {
+        get
+        {
+            _camera.GetParam(PRM.WB_KG, out float w);
+            return w;
+        }
+        set => _camera.SetParam(PRM.WB_KG, value);
+    }
+    
+    public float WhiteBalanceBlueCoefficient {
+        get
+        {
+            _camera.GetParam(PRM.WB_KB, out float w);
+            return w;
+        }
+        set => _camera.SetParam(PRM.WB_KB, value);
+    }
+    
+    public int WhiteBalanceRoiWidth {
+        get
+        {
+            _camera.GetParam(PRM.WB_ROI_WIDTH, out int w);
+            return w;
+        }
+        set
+        {
+            if (_acquisitionIsRunning)
+            {
+                throw new InvalidOperationException("Cannot change camera resolution while acquisition is running.");
+            }
+            _camera.SetParam(PRM.WB_ROI_WIDTH, value);
+        }
+    }
+    
+    public int WhiteBalanceRoiHeight
+    {
+        get
+        {
+            _camera.GetParam(PRM.WB_ROI_HEIGHT, out int w);
+            return w;
+        }
+        set
+        {
+            if (_acquisitionIsRunning)
+            {
+                throw new InvalidOperationException("Cannot change camera resolution while acquisition is running.");
+            }
+            _camera.SetParam(PRM.WB_ROI_HEIGHT, value);
+        }
+    }
 
+    public int WhiteBalanceRoiXOffset
+    {
+        get
+        {
+            _camera.GetParam(PRM.WB_ROI_OFFSET_X, out int w);
+            return w;
+        }
+        set
+        {
+            if (_acquisitionIsRunning)
+            {
+                throw new InvalidOperationException("Cannot change camera offset while acquisition is running.");
+            }
+            _camera.SetParam(PRM.WB_ROI_OFFSET_X, value);
+        }
+    }
+
+    public int WhiteBalanceRoiYOffset
+    {
+        get
+        {
+            _camera.GetParam(PRM.WB_ROI_OFFSET_Y, out int w);
+            return w;
+        }
+        set
+        {
+            if (_acquisitionIsRunning)
+            {
+                throw new InvalidOperationException("Cannot change camera offset while acquisition is running.");
+            }
+            _camera.SetParam(PRM.WB_ROI_OFFSET_Y, value);
+        }
+    }
+    
     public int Width {
         get
         {
@@ -145,17 +251,7 @@ public class XimeaCamera : ICamera, IDisposable
             _camera.SetParam(PRM.WIDTH, value);
         }
     }
-
-    public bool AutoWhiteBalanceIsEnabled
-    {
-        get
-        {
-            _camera.GetParam(PRM.AUTO_WB, out int w);
-            return w == 1;
-        }
-        set => _camera.SetParam(PRM.AUTO_WB, value ? 1 : 0);
-    }
-
+    
     public int Height
     {
         get
